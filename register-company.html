@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <base target="_top">
+  <!-- shared_head.html — LIFFページ共通スタイル（白背景×CAKEMEグリーン・モバイル縦） -->
+<style>
+  :root {
+    --green: #0C6B41;
+    --green-btn: #1FA36B;
+    --gray: #5B6B62;
+    --line: #e6ebe8;
+    --bg: #ffffff;
+    --danger: #c0392b;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans Thai", sans-serif;
+    color: #1a2621; background: var(--bg);
+    font-size: 15px; line-height: 1.6;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 20px 18px 120px; }
+  header.app { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  header.app .logo { color: var(--green); font-weight: 700; font-size: 18px; }
+  h1 { font-size: 18px; margin: 4px 0 12px; }
+  h2 { font-size: 15px; margin: 22px 0 8px; color: var(--green); }
+  p.note { font-size: 13px; color: var(--gray); margin: 4px 0 16px; }
+  .field { margin-bottom: 14px; }
+  label { display: block; font-size: 13px; color: var(--gray); margin-bottom: 5px; }
+  label .req { color: var(--danger); }
+  input, select, textarea {
+    width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px;
+    font-size: 15px; font-family: inherit; background: #fff; outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--green-btn); }
+  .row2 { display: flex; gap: 10px; }
+  .row2 > * { flex: 1; }
+  button {
+    font-family: inherit; font-size: 15px; font-weight: 600; border: none;
+    border-radius: 12px; padding: 13px 16px; cursor: pointer;
+  }
+  .btn-primary { background: var(--green-btn); color: #fff; width: 100%; }
+  .btn-primary:active { opacity: .85; }
+  .btn-ghost { background: #fff; color: var(--green); border: 1px solid var(--line); }
+  .btn-sm { padding: 7px 12px; font-size: 13px; border-radius: 9px; }
+  .footer-fix {
+    position: fixed; left: 0; right: 0; bottom: 0; background: #fff;
+    border-top: 1px solid var(--line); padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+  }
+  .footer-fix .inner { max-width: 480px; margin: 0 auto; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .tabs button { flex: 1; background: #f4f7f5; color: var(--gray); border-radius: 10px; padding: 9px; }
+  .tabs button.on { background: var(--green); color: #fff; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  th { color: var(--gray); font-weight: 600; font-size: 12px; }
+  .list-item { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .list-item .name { flex: 1; font-weight: 600; }
+  .list-item .date { color: var(--gray); font-size: 13px; }
+  .muted { color: var(--gray); }
+  .err { color: var(--danger); font-size: 13px; margin-top: 6px; }
+  .ok-box { text-align: center; padding: 40px 20px; }
+  .ok-box .big { font-size: 40px; }
+  .spinner { display:inline-block; width:16px; height:16px; border:2px solid #fff; border-top-color:transparent; border-radius:50%; animation:spin .7s linear infinite; vertical-align:-3px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%);
+    background: #1a2621; color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 14px;
+    opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 50; }
+  .toast.show { opacity: .95; }
+  .hidden { display: none !important; }
+  .chip { display:inline-block; background:#f4f7f5; border-radius:8px; padding:3px 8px; font-size:12px; color:var(--gray); }
+</style>
+
+</head>
+<body>
+  <div class="wrap" id="form-view">
+    <header class="app"><span class="logo">🎂 CAKEME for Business</span></header>
+    <h1>会社を登録</h1>
+    <p class="note">最初に一度だけ、会社と担当者を登録します。</p>
+
+    <div class="field">
+      <label>会社名 <span class="req">*</span></label>
+      <input id="name" type="text" placeholder="例: CAKEME株式会社" maxlength="100">
+    </div>
+    <div class="field">
+      <label>担当者名 <span class="req">*</span></label>
+      <input id="contact" type="text" placeholder="例: 田中 花子" maxlength="100">
+    </div>
+    <div class="field">
+      <label>電話番号 <span class="req">*</span></label>
+      <input id="phone" type="tel" placeholder="例: 02-123-4567" maxlength="30">
+    </div>
+    <div class="field">
+      <label>メール（任意）</label>
+      <input id="email" type="email" placeholder="例: hana@example.com" maxlength="100">
+    </div>
+    <div id="err" class="err hidden"></div>
+  </div>
+
+  <div class="footer-fix" id="footer">
+    <div class="inner">
+      <button class="btn-primary" id="submit">登録する</button>
+    </div>
+  </div>
+
+  <div class="wrap ok-box hidden" id="done-view">
+    <div class="big">🎉</div>
+    <h1>登録が完了しました</h1>
+    <p class="note">続いて、配達先オフィスと従業員リストを登録しましょう。</p>
+    <button class="btn-primary" onclick="CAKEME.close()">閉じる</button>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script><script src="./config.js"></script><script src="./shared_liff_web.js"></script>
+  <script>
+    CAKEME.init(function () {
+      // 既に登録済みなら完了画面へ
+      CAKEME.call('getBootstrap', {}).then(function (d) {
+        if (d && d.registered) showDone();
+      }).catch(function () {});
+    });
+
+    document.getElementById('submit').addEventListener('click', function () {
+      var btn = this;
+      var name = document.getElementById('name').value.trim();
+      var contact = document.getElementById('contact').value.trim();
+      var phone = document.getElementById('phone').value.trim();
+      var email = document.getElementById('email').value.trim();
+      var err = document.getElementById('err');
+      err.classList.add('hidden');
+
+      if (!name || !contact || !phone) {
+        err.textContent = '会社名・担当者名・電話番号は必須です'; err.classList.remove('hidden'); return;
+      }
+      CAKEME.withLoading(btn, function () {
+        return CAKEME.call('createCompany', { name: name, contact: contact, phone: phone, email: email })
+          .then(function () { showDone(); });
+      });
+    });
+
+    function showDone() {
+      document.getElementById('form-view').classList.add('hidden');
+      document.getElementById('footer').classList.add('hidden');
+      document.getElementById('done-view').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>

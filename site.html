@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <base target="_top">
+  <!-- shared_head.html — LIFFページ共通スタイル（白背景×CAKEMEグリーン・モバイル縦） -->
+<style>
+  :root {
+    --green: #0C6B41;
+    --green-btn: #1FA36B;
+    --gray: #5B6B62;
+    --line: #e6ebe8;
+    --bg: #ffffff;
+    --danger: #c0392b;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans Thai", sans-serif;
+    color: #1a2621; background: var(--bg);
+    font-size: 15px; line-height: 1.6;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 20px 18px 120px; }
+  header.app { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  header.app .logo { color: var(--green); font-weight: 700; font-size: 18px; }
+  h1 { font-size: 18px; margin: 4px 0 12px; }
+  h2 { font-size: 15px; margin: 22px 0 8px; color: var(--green); }
+  p.note { font-size: 13px; color: var(--gray); margin: 4px 0 16px; }
+  .field { margin-bottom: 14px; }
+  label { display: block; font-size: 13px; color: var(--gray); margin-bottom: 5px; }
+  label .req { color: var(--danger); }
+  input, select, textarea {
+    width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px;
+    font-size: 15px; font-family: inherit; background: #fff; outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--green-btn); }
+  .row2 { display: flex; gap: 10px; }
+  .row2 > * { flex: 1; }
+  button {
+    font-family: inherit; font-size: 15px; font-weight: 600; border: none;
+    border-radius: 12px; padding: 13px 16px; cursor: pointer;
+  }
+  .btn-primary { background: var(--green-btn); color: #fff; width: 100%; }
+  .btn-primary:active { opacity: .85; }
+  .btn-ghost { background: #fff; color: var(--green); border: 1px solid var(--line); }
+  .btn-sm { padding: 7px 12px; font-size: 13px; border-radius: 9px; }
+  .footer-fix {
+    position: fixed; left: 0; right: 0; bottom: 0; background: #fff;
+    border-top: 1px solid var(--line); padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+  }
+  .footer-fix .inner { max-width: 480px; margin: 0 auto; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .tabs button { flex: 1; background: #f4f7f5; color: var(--gray); border-radius: 10px; padding: 9px; }
+  .tabs button.on { background: var(--green); color: #fff; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  th { color: var(--gray); font-weight: 600; font-size: 12px; }
+  .list-item { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .list-item .name { flex: 1; font-weight: 600; }
+  .list-item .date { color: var(--gray); font-size: 13px; }
+  .muted { color: var(--gray); }
+  .err { color: var(--danger); font-size: 13px; margin-top: 6px; }
+  .ok-box { text-align: center; padding: 40px 20px; }
+  .ok-box .big { font-size: 40px; }
+  .spinner { display:inline-block; width:16px; height:16px; border:2px solid #fff; border-top-color:transparent; border-radius:50%; animation:spin .7s linear infinite; vertical-align:-3px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%);
+    background: #1a2621; color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 14px;
+    opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 50; }
+  .toast.show { opacity: .95; }
+  .hidden { display: none !important; }
+  .chip { display:inline-block; background:#f4f7f5; border-radius:8px; padding:3px 8px; font-size:12px; color:var(--gray); }
+</style>
+
+</head>
+<body>
+  <div class="wrap">
+    <header class="app"><span class="logo">🎂 CAKEME</span></header>
+    <h1>配達先オフィス</h1>
+    <p class="note">ケーキをお届けするオフィスを登録します。複数拠点も追加できます。</p>
+
+    <h2>登録済み拠点</h2>
+    <div id="list"></div>
+
+    <h2 id="form-title">拠点を追加</h2>
+    <input type="hidden" id="siteId">
+    <div class="field"><label>拠点名 <span class="req">*</span></label>
+      <input id="siteName" type="text" placeholder="例: 本社" maxlength="80"></div>
+    <div class="field"><label>住所 <span class="req">*</span></label>
+      <textarea id="address" rows="2" placeholder="例: 123 Sukhumvit Rd, Bangkok" maxlength="300"></textarea></div>
+    <div class="field"><label>フロア・受付情報</label>
+      <input id="floorInfo" type="text" placeholder="例: 5F 受付" maxlength="200"></div>
+    <div class="field"><label>受取担当</label>
+      <input id="receiver" type="text" placeholder="例: 総務 山田" maxlength="100"></div>
+    <div class="field"><label>配達可能時間帯</label>
+      <input id="timeWindow" type="text" placeholder="例: 平日 9:00-17:00" maxlength="50"></div>
+    <div id="err" class="err hidden"></div>
+  </div>
+
+  <div class="footer-fix">
+    <div class="inner"><button class="btn-primary" id="save">保存する</button></div>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script><script src="./config.js"></script><script src="./shared_liff_web.js"></script>
+  <script>
+    var sites = [], defaultSiteId = '';
+
+    CAKEME.init(function () {
+      CAKEME.call('getBootstrap', {}).then(function (d) {
+        if (!d || !d.registered) { location.href = 'https://liff.line.me/' + LIFF_ID + '?page=register-company'; return; }
+        sites = d.sites || []; defaultSiteId = d.company.defaultSiteId || '';
+        render();
+      }).catch(function (e) { showErr(e.message); });
+    });
+
+    function render() {
+      var list = document.getElementById('list');
+      list.innerHTML = sites.map(function (s) {
+        var isDefault = s.siteId === defaultSiteId;
+        return '<div class="list-item">' +
+          '<span class="name">' + esc(s.siteName) + (isDefault ? ' <span class="chip">既定</span>' : '') + '<br>' +
+          '<span class="muted" style="font-weight:400;font-size:13px">' + esc(s.address) + '</span></span>' +
+          '<button class="btn-ghost btn-sm" data-edit="' + esc(s.siteId) + '">編集</button>' +
+          '</div>';
+      }).join('') || '<p class="muted">まだありません</p>';
+
+      list.querySelectorAll('button[data-edit]').forEach(function (b) {
+        b.addEventListener('click', function () { editSite(b.getAttribute('data-edit')); });
+      });
+    }
+
+    function editSite(id) {
+      var s = sites.filter(function (x) { return x.siteId === id; })[0]; if (!s) return;
+      document.getElementById('siteId').value = s.siteId;
+      document.getElementById('siteName').value = s.siteName || '';
+      document.getElementById('address').value = s.address || '';
+      document.getElementById('floorInfo').value = s.floorInfo || '';
+      document.getElementById('receiver').value = s.receiver || '';
+      document.getElementById('timeWindow').value = s.timeWindow || '';
+      document.getElementById('form-title').textContent = '拠点を編集';
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    document.getElementById('save').addEventListener('click', function () {
+      var btn = this;
+      var payload = {
+        siteId: document.getElementById('siteId').value,
+        siteName: document.getElementById('siteName').value.trim(),
+        address: document.getElementById('address').value.trim(),
+        floorInfo: document.getElementById('floorInfo').value.trim(),
+        receiver: document.getElementById('receiver').value.trim(),
+        timeWindow: document.getElementById('timeWindow').value.trim()
+      };
+      if (!payload.siteName || !payload.address) { showErr('拠点名・住所は必須です'); return; }
+      hideErr();
+      CAKEME.withLoading(btn, function () {
+        return CAKEME.call('upsertSite', payload).then(function () {
+          CAKEME.toast('保存しました');
+          return CAKEME.call('getBootstrap', {}).then(function (d) {
+            sites = d.sites || []; defaultSiteId = d.company.defaultSiteId || '';
+            ['siteId','siteName','address','floorInfo','receiver','timeWindow'].forEach(function (k) { document.getElementById(k).value = ''; });
+            document.getElementById('form-title').textContent = '拠点を追加';
+            render();
+          });
+        });
+      });
+    });
+
+    function showErr(m) { var el = document.getElementById('err'); el.textContent = m; el.classList.remove('hidden'); }
+    function hideErr() { document.getElementById('err').classList.add('hidden'); }
+  </script>
+</body>
+</html>

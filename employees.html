@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <base target="_top">
+  <!-- shared_head.html — LIFFページ共通スタイル（白背景×CAKEMEグリーン・モバイル縦） -->
+<style>
+  :root {
+    --green: #0C6B41;
+    --green-btn: #1FA36B;
+    --gray: #5B6B62;
+    --line: #e6ebe8;
+    --bg: #ffffff;
+    --danger: #c0392b;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans Thai", sans-serif;
+    color: #1a2621; background: var(--bg);
+    font-size: 15px; line-height: 1.6;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 20px 18px 120px; }
+  header.app { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  header.app .logo { color: var(--green); font-weight: 700; font-size: 18px; }
+  h1 { font-size: 18px; margin: 4px 0 12px; }
+  h2 { font-size: 15px; margin: 22px 0 8px; color: var(--green); }
+  p.note { font-size: 13px; color: var(--gray); margin: 4px 0 16px; }
+  .field { margin-bottom: 14px; }
+  label { display: block; font-size: 13px; color: var(--gray); margin-bottom: 5px; }
+  label .req { color: var(--danger); }
+  input, select, textarea {
+    width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px;
+    font-size: 15px; font-family: inherit; background: #fff; outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--green-btn); }
+  .row2 { display: flex; gap: 10px; }
+  .row2 > * { flex: 1; }
+  button {
+    font-family: inherit; font-size: 15px; font-weight: 600; border: none;
+    border-radius: 12px; padding: 13px 16px; cursor: pointer;
+  }
+  .btn-primary { background: var(--green-btn); color: #fff; width: 100%; }
+  .btn-primary:active { opacity: .85; }
+  .btn-ghost { background: #fff; color: var(--green); border: 1px solid var(--line); }
+  .btn-sm { padding: 7px 12px; font-size: 13px; border-radius: 9px; }
+  .footer-fix {
+    position: fixed; left: 0; right: 0; bottom: 0; background: #fff;
+    border-top: 1px solid var(--line); padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+  }
+  .footer-fix .inner { max-width: 480px; margin: 0 auto; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .tabs button { flex: 1; background: #f4f7f5; color: var(--gray); border-radius: 10px; padding: 9px; }
+  .tabs button.on { background: var(--green); color: #fff; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  th { color: var(--gray); font-weight: 600; font-size: 12px; }
+  .list-item { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .list-item .name { flex: 1; font-weight: 600; }
+  .list-item .date { color: var(--gray); font-size: 13px; }
+  .muted { color: var(--gray); }
+  .err { color: var(--danger); font-size: 13px; margin-top: 6px; }
+  .ok-box { text-align: center; padding: 40px 20px; }
+  .ok-box .big { font-size: 40px; }
+  .spinner { display:inline-block; width:16px; height:16px; border:2px solid #fff; border-top-color:transparent; border-radius:50%; animation:spin .7s linear infinite; vertical-align:-3px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%);
+    background: #1a2621; color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 14px;
+    opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 50; }
+  .toast.show { opacity: .95; }
+  .hidden { display: none !important; }
+  .chip { display:inline-block; background:#f4f7f5; border-radius:8px; padding:3px 8px; font-size:12px; color:var(--gray); }
+</style>
+
+</head>
+<body>
+  <div class="wrap">
+    <header class="app"><span class="logo">🎂 CAKEME</span></header>
+    <h1>従業員リスト</h1>
+    <p class="note">
+      入力は <b>表示名</b> と <b>誕生日（月・日）</b> だけ。<br>
+      <b>本名でなくてOK（ニックネーム推奨）。生年は不要です。</b>
+    </p>
+
+    <div class="tabs">
+      <button class="on" id="tab-manual" onclick="switchTab('manual')">手入力</button>
+      <button id="tab-csv" onclick="switchTab('csv')">CSV取込</button>
+    </div>
+
+    <!-- 手入力 -->
+    <div id="pane-manual">
+      <div class="row2">
+        <div class="field" style="flex:2"><label>表示名 <span class="req">*</span></label>
+          <input id="m-name" type="text" placeholder="ニックネーム" maxlength="40"></div>
+        <div class="field"><label>月 <span class="req">*</span></label>
+          <input id="m-month" type="number" min="1" max="12" inputmode="numeric"></div>
+        <div class="field"><label>日 <span class="req">*</span></label>
+          <input id="m-day" type="number" min="1" max="31" inputmode="numeric"></div>
+      </div>
+      <button class="btn-ghost" id="add-row" style="width:100%">＋ リストに追加</button>
+    </div>
+
+    <!-- CSV取込 -->
+    <div id="pane-csv" class="hidden">
+      <p class="note">列は「表示名, 月, 日」の3列のみ。1行目ヘッダーは任意。</p>
+      <p><a href="#" id="dl-template">テンプレCSVをダウンロード</a></p>
+      <div class="field"><input type="file" id="csv-file" accept=".csv"></div>
+      <div id="csv-preview"></div>
+    </div>
+
+    <h2>登録済み（<span id="count">0</span>名）</h2>
+    <div id="err" class="err hidden"></div>
+    <div id="list"></div>
+  </div>
+
+  <div class="footer-fix">
+    <div class="inner"><button class="btn-primary" id="save">保存する</button></div>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script><script src="./config.js"></script><script src="./shared_liff_web.js"></script>
+  <script>
+    var employees = [];   // 既存（サーバー由来）
+    var pending = [];     // 未保存の追加分 {displayName,birthMonth,birthDay}
+
+    CAKEME.init(function () {
+      CAKEME.call('getBootstrap', {}).then(function (d) {
+        if (!d || !d.registered) { location.href = 'https://liff.line.me/' + LIFF_ID + '?page=register-company'; return; }
+        employees = d.employees || [];
+        render();
+      }).catch(function (e) { showErr(e.message); });
+    });
+
+    function switchTab(which) {
+      document.getElementById('tab-manual').classList.toggle('on', which === 'manual');
+      document.getElementById('tab-csv').classList.toggle('on', which === 'csv');
+      document.getElementById('pane-manual').classList.toggle('hidden', which !== 'manual');
+      document.getElementById('pane-csv').classList.toggle('hidden', which !== 'csv');
+    }
+
+    document.getElementById('add-row').addEventListener('click', function () {
+      var name = document.getElementById('m-name').value.trim();
+      var mo = parseInt(document.getElementById('m-month').value, 10);
+      var dy = parseInt(document.getElementById('m-day').value, 10);
+      if (!name || !(mo >= 1 && mo <= 12) || !(dy >= 1 && dy <= 31)) { showErr('表示名・月(1-12)・日(1-31)を入力してください'); return; }
+      pending.push({ displayName: name, birthMonth: mo, birthDay: dy });
+      document.getElementById('m-name').value = '';
+      document.getElementById('m-month').value = '';
+      document.getElementById('m-day').value = '';
+      hideErr(); render();
+    });
+
+    // CSVテンプレDL
+    document.getElementById('dl-template').addEventListener('click', function (e) {
+      e.preventDefault();
+      var csv = '﻿表示名,月,日\nSomchai,7,25\nNok,3,3\n';
+      var a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      a.download = 'employees_template.csv'; a.click();
+    });
+
+    // CSV読込
+    document.getElementById('csv-file').addEventListener('change', function (e) {
+      var file = e.target.files[0]; if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function (ev) { parseCsv(ev.target.result); };
+      reader.readAsText(file);
+    });
+
+    function parseCsv(text) {
+      var lines = text.replace(/﻿/g, '').split(/\r?\n/).filter(function (l) { return l.trim(); });
+      var out = [], bad = [];
+      lines.forEach(function (line, i) {
+        var c = line.split(',');
+        var name = (c[0] || '').trim();
+        if (i === 0 && /表示名|name/i.test(name)) return; // ヘッダー行スキップ
+        var mo = parseInt((c[1] || '').trim(), 10), dy = parseInt((c[2] || '').trim(), 10);
+        if (name && mo >= 1 && mo <= 12 && dy >= 1 && dy <= 31) out.push({ displayName: name, birthMonth: mo, birthDay: dy });
+        else bad.push(i + 1);
+      });
+      pending = pending.concat(out);
+      var pv = document.getElementById('csv-preview');
+      pv.innerHTML = '<p class="note">' + out.length + '件を追加候補にしました' +
+        (bad.length ? '（不正な行: ' + bad.join(', ') + '）' : '') + '</p>';
+      render();
+    }
+
+    function render() {
+      var list = document.getElementById('list');
+      var all = employees.map(function (e) { return { e: e, saved: true }; })
+        .concat(pending.map(function (e) { return { e: e, saved: false }; }));
+      all.sort(function (a, b) { return (a.e.birthMonth - b.e.birthMonth) || (a.e.birthDay - b.e.birthDay); });
+      document.getElementById('count').textContent = all.filter(function(x){ return x.saved ? (''+x.e.active!=='false') : true; }).length;
+
+      list.innerHTML = all.map(function (x, idx) {
+        var e = x.e;
+        var mmdd = e.birthMonth + '/' + e.birthDay;
+        var inactive = x.saved && (String(e.active) === 'false');
+        return '<div class="list-item">' +
+          '<span class="name" style="' + (inactive ? 'opacity:.4;text-decoration:line-through' : '') + '">' + esc(e.displayName) + '</span>' +
+          '<span class="date">' + mmdd + '</span>' +
+          (x.saved
+            ? '<button class="btn-ghost btn-sm" data-id="' + esc(e.employeeId) + '" data-act="' + (inactive ? 'true' : 'false') + '">' + (inactive ? '復帰' : '在籍off') + '</button>'
+            : '<span class="chip">未保存</span> <button class="btn-ghost btn-sm" data-pending="' + idx + '">削除</button>') +
+          '</div>';
+      }).join('') || '<p class="muted">まだありません</p>';
+
+      // 在籍トグル
+      list.querySelectorAll('button[data-id]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var id = b.getAttribute('data-id'), act = b.getAttribute('data-act') === 'true';
+          CAKEME.withLoading(b, function () {
+            return CAKEME.call('setEmployeeActive', { employeeId: id, active: act }).then(function () {
+              var emp = employees.filter(function (x) { return x.employeeId === id; })[0];
+              if (emp) emp.active = act; render();
+            });
+          });
+        });
+      });
+      // 未保存削除（data-pendingはソート後indexなので名前で消す）
+      list.querySelectorAll('button[data-pending]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var name = b.closest('.list-item').querySelector('.name').textContent;
+          var d = b.closest('.list-item').querySelector('.date').textContent.split('/');
+          pending = pending.filter(function (p) {
+            return !(p.displayName === name && p.birthMonth == d[0] && p.birthDay == d[1]);
+          });
+          render();
+        });
+      });
+    }
+
+    document.getElementById('save').addEventListener('click', function () {
+      if (!pending.length) { CAKEME.toast('追加分がありません'); return; }
+      var btn = this;
+      CAKEME.withLoading(btn, function () {
+        return CAKEME.call('upsertEmployees', { employees: pending }).then(function (res) {
+          if (res.errors && res.errors.length) {
+            showErr(res.errors.length + '件エラー: ' + res.errors.map(function (x) { return x.displayName + '(' + x.error + ')'; }).join(' / '));
+          } else { hideErr(); }
+          CAKEME.toast(res.added + '件を保存しました');
+          pending = [];
+          return CAKEME.call('getBootstrap', {}).then(function (d) { employees = d.employees || []; render(); });
+        });
+      });
+    });
+
+    function showErr(m) { var el = document.getElementById('err'); el.textContent = m; el.classList.remove('hidden'); }
+    function hideErr() { document.getElementById('err').classList.add('hidden'); }
+  </script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <base target="_top">
+  <!-- shared_head.html — LIFFページ共通スタイル（白背景×CAKEMEグリーン・モバイル縦） -->
+<style>
+  :root {
+    --green: #0C6B41;
+    --green-btn: #1FA36B;
+    --gray: #5B6B62;
+    --line: #e6ebe8;
+    --bg: #ffffff;
+    --danger: #c0392b;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans Thai", sans-serif;
+    color: #1a2621; background: var(--bg);
+    font-size: 15px; line-height: 1.6;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 20px 18px 120px; }
+  header.app { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  header.app .logo { color: var(--green); font-weight: 700; font-size: 18px; }
+  h1 { font-size: 18px; margin: 4px 0 12px; }
+  h2 { font-size: 15px; margin: 22px 0 8px; color: var(--green); }
+  p.note { font-size: 13px; color: var(--gray); margin: 4px 0 16px; }
+  .field { margin-bottom: 14px; }
+  label { display: block; font-size: 13px; color: var(--gray); margin-bottom: 5px; }
+  label .req { color: var(--danger); }
+  input, select, textarea {
+    width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px;
+    font-size: 15px; font-family: inherit; background: #fff; outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--green-btn); }
+  .row2 { display: flex; gap: 10px; }
+  .row2 > * { flex: 1; }
+  button {
+    font-family: inherit; font-size: 15px; font-weight: 600; border: none;
+    border-radius: 12px; padding: 13px 16px; cursor: pointer;
+  }
+  .btn-primary { background: var(--green-btn); color: #fff; width: 100%; }
+  .btn-primary:active { opacity: .85; }
+  .btn-ghost { background: #fff; color: var(--green); border: 1px solid var(--line); }
+  .btn-sm { padding: 7px 12px; font-size: 13px; border-radius: 9px; }
+  .footer-fix {
+    position: fixed; left: 0; right: 0; bottom: 0; background: #fff;
+    border-top: 1px solid var(--line); padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+  }
+  .footer-fix .inner { max-width: 480px; margin: 0 auto; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .tabs button { flex: 1; background: #f4f7f5; color: var(--gray); border-radius: 10px; padding: 9px; }
+  .tabs button.on { background: var(--green); color: #fff; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  th { color: var(--gray); font-weight: 600; font-size: 12px; }
+  .list-item { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .list-item .name { flex: 1; font-weight: 600; }
+  .list-item .date { color: var(--gray); font-size: 13px; }
+  .muted { color: var(--gray); }
+  .err { color: var(--danger); font-size: 13px; margin-top: 6px; }
+  .ok-box { text-align: center; padding: 40px 20px; }
+  .ok-box .big { font-size: 40px; }
+  .spinner { display:inline-block; width:16px; height:16px; border:2px solid #fff; border-top-color:transparent; border-radius:50%; animation:spin .7s linear infinite; vertical-align:-3px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%);
+    background: #1a2621; color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 14px;
+    opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 50; }
+  .toast.show { opacity: .95; }
+  .hidden { display: none !important; }
+  .chip { display:inline-block; background:#f4f7f5; border-radius:8px; padding:3px 8px; font-size:12px; color:var(--gray); }
+</style>
+
+</head>
+<body>
+  <div class="wrap">
+    <header class="app"><span class="logo">🎂 CAKEME</span></header>
+    <h1>設定</h1>
+    <p class="note">既定のケーキ・配達先や、通知の受け取り方を設定します。</p>
+
+    <h2>会社デフォルト</h2>
+    <div class="field"><label>既定の配達先オフィス</label>
+      <select id="defaultSiteId"></select></div>
+    <div class="row2">
+      <div class="field"><label>既定のケーキ</label><select id="defaultCakeId"></select></div>
+      <div class="field"><label>サイズ</label>
+        <select id="defaultSize"><option>S</option><option>M</option><option>L</option></select></div>
+    </div>
+    <div class="field"><label>1台あたり予算上限（THB・任意）</label>
+      <input id="budgetCap" type="number" min="0" inputmode="numeric" placeholder="例: 1500"></div>
+
+    <h2>通知</h2>
+    <div class="field"><label>確定方式</label>
+      <select id="confirmMode">
+        <option value="confirm">都度確認（おすすめ）</option>
+        <option value="auto">おまかせ自動確定</option>
+      </select></div>
+    <div class="field"><label>リマインドを送るタイミング</label>
+      <select id="reminderLeadDays">
+        <option value="2">誕生日の2営業日前</option>
+        <option value="3">誕生日の3営業日前</option>
+        <option value="5">誕生日の5営業日前</option>
+      </select></div>
+    <div class="field">
+      <label><input type="checkbox" id="notifyEnabled" style="width:auto;vertical-align:-2px"> この端末（担当者）に通知を受け取る</label>
+    </div>
+    <div id="err" class="err hidden"></div>
+  </div>
+
+  <div class="footer-fix">
+    <div class="inner"><button class="btn-primary" id="save">保存する</button></div>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script><script src="./config.js"></script><script src="./shared_liff_web.js"></script>
+  <script>
+    CAKEME.init(function () {
+      CAKEME.call('getBootstrap', {}).then(function (d) {
+        if (!d || !d.registered) { location.href = 'https://liff.line.me/' + LIFF_ID + '?page=register-company'; return; }
+        fill(d);
+      }).catch(function (e) { showErr(e.message); });
+    });
+
+    function fill(d) {
+      var c = d.company;
+      // 拠点セレクト
+      var siteSel = document.getElementById('defaultSiteId');
+      siteSel.innerHTML = '<option value="">（未設定）</option>' +
+        (d.sites || []).map(function (s) { return '<option value="' + esc(s.siteId) + '">' + esc(s.siteName) + '</option>'; }).join('');
+      siteSel.value = c.defaultSiteId || '';
+      // ケーキセレクト
+      var cakeSel = document.getElementById('defaultCakeId');
+      cakeSel.innerHTML = (d.menu || []).map(function (m) { return '<option value="' + esc(m.cakeId) + '">' + esc(m.name) + '</option>'; }).join('');
+      cakeSel.value = c.defaultCakeId || '';
+      document.getElementById('defaultSize').value = c.defaultSize || 'M';
+      document.getElementById('budgetCap').value = c.budgetCap || '';
+      document.getElementById('confirmMode').value = c.confirmMode || 'confirm';
+      document.getElementById('reminderLeadDays').value = String(c.reminderLeadDays || 3);
+      document.getElementById('notifyEnabled').checked = !!(d.contact && d.contact.notifyEnabled);
+    }
+
+    document.getElementById('save').addEventListener('click', function () {
+      var btn = this;
+      var payload = {
+        defaultSiteId: document.getElementById('defaultSiteId').value,
+        defaultCakeId: document.getElementById('defaultCakeId').value,
+        defaultSize: document.getElementById('defaultSize').value,
+        budgetCap: document.getElementById('budgetCap').value === '' ? '' : parseInt(document.getElementById('budgetCap').value, 10),
+        confirmMode: document.getElementById('confirmMode').value,
+        reminderLeadDays: parseInt(document.getElementById('reminderLeadDays').value, 10),
+        notifyEnabled: document.getElementById('notifyEnabled').checked
+      };
+      hideErr();
+      CAKEME.withLoading(btn, function () {
+        return CAKEME.call('updateSettings', payload).then(function () { CAKEME.toast('保存しました'); });
+      });
+    });
+
+    function showErr(m) { var el = document.getElementById('err'); el.textContent = m; el.classList.remove('hidden'); }
+    function hideErr() { document.getElementById('err').classList.add('hidden'); }
+  </script>
+</body>
+</html>

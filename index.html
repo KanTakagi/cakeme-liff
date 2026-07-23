@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>CAKEME for Business</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body style="font-family:sans-serif;padding:20px;color:#5B6B62">
+  <p>読み込み中…</p>
+  <script src="./config.js"></script>
+  <script>
+    // LIFFの入口(エンドポイント)。開かれた page に応じて各画面へ振り分ける。
+    (function () {
+      function target() {
+        var params = new URLSearchParams(location.search);
+        var page = params.get('page');
+        // LIFFは追加クエリを liff.state に包むことがある
+        if (!page && params.get('liff.state')) {
+          var st = params.get('liff.state');
+          var sp = new URLSearchParams(st.charAt(0) === '?' ? st.slice(1) : st);
+          page = sp.get('page');
+          params = sp;
+        }
+        var allowed = ['register-company', 'site', 'employees', 'settings', 'order', 'history'];
+        if (allowed.indexOf(page) === -1) page = 'register-company';
+        var extra = '';
+        var draft = params.get('draft');
+        if (draft) extra = '?draft=' + encodeURIComponent(draft);
+        return page + '.html' + extra;
+      }
+      // liff.init でログインを確立してから遷移（未ログインなら login()）
+      if (typeof liff === 'undefined') { document.body.innerHTML = 'LIFF SDK未ロード'; return; }
+      liff.init({ liffId: (window.LIFF_CFG || {}).liffId }).then(function () {
+        if (!liff.isLoggedIn()) { liff.login(); return; }
+        location.replace(target());
+      }).catch(function (e) {
+        document.body.innerHTML = '初期化エラー: ' + (e && e.message);
+      });
+    })();
+  </script>
+</body>
+</html>

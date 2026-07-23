@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <base target="_top">
+  <!-- shared_head.html — LIFFページ共通スタイル（白背景×CAKEMEグリーン・モバイル縦） -->
+<style>
+  :root {
+    --green: #0C6B41;
+    --green-btn: #1FA36B;
+    --gray: #5B6B62;
+    --line: #e6ebe8;
+    --bg: #ffffff;
+    --danger: #c0392b;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans Thai", sans-serif;
+    color: #1a2621; background: var(--bg);
+    font-size: 15px; line-height: 1.6;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 20px 18px 120px; }
+  header.app { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  header.app .logo { color: var(--green); font-weight: 700; font-size: 18px; }
+  h1 { font-size: 18px; margin: 4px 0 12px; }
+  h2 { font-size: 15px; margin: 22px 0 8px; color: var(--green); }
+  p.note { font-size: 13px; color: var(--gray); margin: 4px 0 16px; }
+  .field { margin-bottom: 14px; }
+  label { display: block; font-size: 13px; color: var(--gray); margin-bottom: 5px; }
+  label .req { color: var(--danger); }
+  input, select, textarea {
+    width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px;
+    font-size: 15px; font-family: inherit; background: #fff; outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--green-btn); }
+  .row2 { display: flex; gap: 10px; }
+  .row2 > * { flex: 1; }
+  button {
+    font-family: inherit; font-size: 15px; font-weight: 600; border: none;
+    border-radius: 12px; padding: 13px 16px; cursor: pointer;
+  }
+  .btn-primary { background: var(--green-btn); color: #fff; width: 100%; }
+  .btn-primary:active { opacity: .85; }
+  .btn-ghost { background: #fff; color: var(--green); border: 1px solid var(--line); }
+  .btn-sm { padding: 7px 12px; font-size: 13px; border-radius: 9px; }
+  .footer-fix {
+    position: fixed; left: 0; right: 0; bottom: 0; background: #fff;
+    border-top: 1px solid var(--line); padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+  }
+  .footer-fix .inner { max-width: 480px; margin: 0 auto; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .tabs button { flex: 1; background: #f4f7f5; color: var(--gray); border-radius: 10px; padding: 9px; }
+  .tabs button.on { background: var(--green); color: #fff; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  th { color: var(--gray); font-weight: 600; font-size: 12px; }
+  .list-item { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .list-item .name { flex: 1; font-weight: 600; }
+  .list-item .date { color: var(--gray); font-size: 13px; }
+  .muted { color: var(--gray); }
+  .err { color: var(--danger); font-size: 13px; margin-top: 6px; }
+  .ok-box { text-align: center; padding: 40px 20px; }
+  .ok-box .big { font-size: 40px; }
+  .spinner { display:inline-block; width:16px; height:16px; border:2px solid #fff; border-top-color:transparent; border-radius:50%; animation:spin .7s linear infinite; vertical-align:-3px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%);
+    background: #1a2621; color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 14px;
+    opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 50; }
+  .toast.show { opacity: .95; }
+  .hidden { display: none !important; }
+  .chip { display:inline-block; background:#f4f7f5; border-radius:8px; padding:3px 8px; font-size:12px; color:var(--gray); }
+</style>
+
+</head>
+<body>
+  <div class="wrap">
+    <header class="app"><span class="logo">🎂 CAKEME</span></header>
+    <h1>注文履歴</h1>
+
+    <div class="row2">
+      <div class="field"><label>月</label><input id="f-month" type="month"></div>
+      <div class="field"><label>状態</label>
+        <select id="f-status">
+          <option value="">すべて</option>
+          <option value="draft">未確定</option>
+          <option value="confirmed">確定</option>
+          <option value="preparing">製造中</option>
+          <option value="out_for_delivery">配達中</option>
+          <option value="delivered">完了</option>
+          <option value="cancelled">キャンセル</option>
+          <option value="skipped">スキップ</option>
+        </select></div>
+    </div>
+
+    <div id="err" class="err hidden"></div>
+    <div id="list"><p class="muted">読み込み中…</p></div>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script><script src="./config.js"></script><script src="./shared_liff_web.js"></script>
+  <script>
+    var STATUS_LABEL = {
+      draft: '未確定', confirmed: '確定', preparing: '製造中', out_for_delivery: '配達中',
+      delivered: '完了', cancelled: 'キャンセル', skipped: 'スキップ'
+    };
+
+    CAKEME.init(function () {
+      document.getElementById('f-month').addEventListener('change', load);
+      document.getElementById('f-status').addEventListener('change', load);
+      load();
+    });
+
+    function load() {
+      var filter = {
+        month: document.getElementById('f-month').value || '',
+        status: document.getElementById('f-status').value || ''
+      };
+      document.getElementById('list').innerHTML = '<p class="muted">読み込み中…</p>';
+      CAKEME.call('listOrders', { filter: filter }).then(render).catch(function (e) {
+        document.getElementById('err').textContent = e.message;
+        document.getElementById('err').classList.remove('hidden');
+      });
+    }
+
+    function render(d) {
+      var orders = d.orders || [];
+      var list = document.getElementById('list');
+      if (!orders.length) { list.innerHTML = '<p class="muted">該当する注文はありません</p>'; return; }
+      list.innerHTML = orders.map(function (o) {
+        return '<div class="list-item">' +
+          '<span class="name">' + esc(o.employeeName) + '<br>' +
+            '<span class="muted" style="font-weight:400;font-size:13px">' + esc(o.cake) + ' / ' + o.total + ' THB</span></span>' +
+          '<span class="date">' + esc(o.deliveryDate) + '<br><span class="chip">' + (STATUS_LABEL[o.status] || o.status) + '</span></span>' +
+          (o.cancellable ? '<button class="btn-ghost btn-sm" data-cancel="' + esc(o.orderId) + '">取消</button>' : '') +
+          '</div>';
+      }).join('');
+
+      list.querySelectorAll('button[data-cancel]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          if (!confirm('この注文をキャンセルしますか？')) return;
+          CAKEME.withLoading(b, function () {
+            return CAKEME.call('cancelOrder', { orderId: b.getAttribute('data-cancel') }).then(function () {
+              CAKEME.toast('キャンセルしました'); load();
+            });
+          });
+        });
+      });
+    }
+  </script>
+</body>
+</html>
