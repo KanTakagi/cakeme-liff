@@ -83,12 +83,7 @@
       <b>本名でなくてOK（ニックネーム推奨）。生年は不要です。</b>
     </p>
 
-    <div class="tabs">
-      <button class="on" id="tab-manual" onclick="switchTab('manual')">手入力</button>
-      <button id="tab-csv" onclick="switchTab('csv')">CSV取込</button>
-    </div>
-
-    <!-- 手入力 -->
+    <!-- 手入力（新入社員の追加・在籍変更用。大量登録は事務局のCSV取込で） -->
     <div id="pane-manual">
       <div class="row2">
         <div class="field" style="flex:2"><label>表示名 <span class="req">*</span></label>
@@ -99,14 +94,7 @@
           <input id="m-day" type="number" min="1" max="31" inputmode="numeric"></div>
       </div>
       <button class="btn-ghost" id="add-row" style="width:100%">＋ リストに追加</button>
-    </div>
-
-    <!-- CSV取込 -->
-    <div id="pane-csv" class="hidden">
-      <p class="note">列は「表示名, 月, 日」の3列のみ。1行目ヘッダーは任意。</p>
-      <p><a href="#" id="dl-template">テンプレCSVをダウンロード</a></p>
-      <div class="field"><input type="file" id="csv-file" accept=".csv"></div>
-      <div id="csv-preview"></div>
+      <p class="note" style="margin-top:8px">まとめて登録したい場合は、リスト（Excel/CSV）をCAKEME事務局へお送りください。こちらで取り込みます。</p>
     </div>
 
     <h2>登録済み（<span id="count">0</span>名）</h2>
@@ -131,13 +119,6 @@
       }).catch(function (e) { showErr(e.message); });
     });
 
-    function switchTab(which) {
-      document.getElementById('tab-manual').classList.toggle('on', which === 'manual');
-      document.getElementById('tab-csv').classList.toggle('on', which === 'csv');
-      document.getElementById('pane-manual').classList.toggle('hidden', which !== 'manual');
-      document.getElementById('pane-csv').classList.toggle('hidden', which !== 'csv');
-    }
-
     document.getElementById('add-row').addEventListener('click', function () {
       var name = document.getElementById('m-name').value.trim();
       var mo = parseInt(document.getElementById('m-month').value, 10);
@@ -149,41 +130,6 @@
       document.getElementById('m-day').value = '';
       hideErr(); render();
     });
-
-    // CSVテンプレDL
-    document.getElementById('dl-template').addEventListener('click', function (e) {
-      e.preventDefault();
-      var csv = '﻿表示名,月,日\nSomchai,7,25\nNok,3,3\n';
-      var a = document.createElement('a');
-      a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-      a.download = 'employees_template.csv'; a.click();
-    });
-
-    // CSV読込
-    document.getElementById('csv-file').addEventListener('change', function (e) {
-      var file = e.target.files[0]; if (!file) return;
-      var reader = new FileReader();
-      reader.onload = function (ev) { parseCsv(ev.target.result); };
-      reader.readAsText(file);
-    });
-
-    function parseCsv(text) {
-      var lines = text.replace(/﻿/g, '').split(/\r?\n/).filter(function (l) { return l.trim(); });
-      var out = [], bad = [];
-      lines.forEach(function (line, i) {
-        var c = line.split(',');
-        var name = (c[0] || '').trim();
-        if (i === 0 && /表示名|name/i.test(name)) return; // ヘッダー行スキップ
-        var mo = parseInt((c[1] || '').trim(), 10), dy = parseInt((c[2] || '').trim(), 10);
-        if (name && mo >= 1 && mo <= 12 && dy >= 1 && dy <= 31) out.push({ displayName: name, birthMonth: mo, birthDay: dy });
-        else bad.push(i + 1);
-      });
-      pending = pending.concat(out);
-      var pv = document.getElementById('csv-preview');
-      pv.innerHTML = '<p class="note">' + out.length + '件を追加候補にしました' +
-        (bad.length ? '（不正な行: ' + bad.join(', ') + '）' : '') + '</p>';
-      render();
-    }
 
     function render() {
       var list = document.getElementById('list');
