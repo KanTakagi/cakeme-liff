@@ -25,6 +25,9 @@ const pages = fs.readdirSync(ROOT).filter(f => /^page_.*\.html$/.test(f) && f !=
 
 pages.forEach(file => {
   let html = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  // スマホ表示用の viewport を付与（GAS版は addMetaTag で付けていた分をここで補う）
+  html = html.replace(/<meta charset="utf-8">/i,
+    '<meta charset="utf-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">');
   html = html.replace(/<\?!?=?\s*include\('shared_head'\);?\s*\?>/g, sharedHead);
   html = html.replace(/<\?!?=?\s*include\('shared_liff'\);?\s*\?>/g, liffHead);
   html = html.replace(/<\?!?=?\s*paramsJson\s*\?>/g, 'null');
