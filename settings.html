@@ -83,20 +83,10 @@
     <h2>会社デフォルト</h2>
     <div class="field"><label>既定の配達先オフィス</label>
       <select id="defaultSiteId"></select></div>
-    <div class="row2">
-      <div class="field"><label>既定のケーキ</label><select id="defaultCakeId"></select></div>
-      <div class="field"><label>サイズ</label>
-        <select id="defaultSize"><option>S</option><option>M</option><option>L</option></select></div>
-    </div>
-    <div class="field"><label>1台あたり予算上限（THB・任意）</label>
-      <input id="budgetCap" type="number" min="0" inputmode="numeric" placeholder="例: 1500"></div>
+    <div class="field"><label>既定のケーキサイズ</label>
+      <select id="defaultSize"><option>S</option><option>M</option><option>L</option></select></div>
 
     <h2>通知</h2>
-    <div class="field"><label>確定方式</label>
-      <select id="confirmMode">
-        <option value="confirm">都度確認（おすすめ）</option>
-        <option value="auto">おまかせ自動確定</option>
-      </select></div>
     <div class="field"><label>リマインドを送るタイミング</label>
       <select id="reminderLeadDays">
         <option value="2">誕生日の2営業日前</option>
@@ -129,13 +119,7 @@
       siteSel.innerHTML = '<option value="">（未設定）</option>' +
         (d.sites || []).map(function (s) { return '<option value="' + esc(s.siteId) + '">' + esc(s.siteName) + '</option>'; }).join('');
       siteSel.value = c.defaultSiteId || '';
-      // ケーキセレクト
-      var cakeSel = document.getElementById('defaultCakeId');
-      cakeSel.innerHTML = (d.menu || []).map(function (m) { return '<option value="' + esc(m.cakeId) + '">' + esc(m.name) + '</option>'; }).join('');
-      cakeSel.value = c.defaultCakeId || '';
       document.getElementById('defaultSize').value = c.defaultSize || 'M';
-      document.getElementById('budgetCap').value = c.budgetCap || '';
-      document.getElementById('confirmMode').value = c.confirmMode || 'confirm';
       document.getElementById('reminderLeadDays').value = String(c.reminderLeadDays || 3);
       document.getElementById('notifyEnabled').checked = !!(d.contact && d.contact.notifyEnabled);
     }
@@ -144,10 +128,7 @@
       var btn = this;
       var payload = {
         defaultSiteId: document.getElementById('defaultSiteId').value,
-        defaultCakeId: document.getElementById('defaultCakeId').value,
         defaultSize: document.getElementById('defaultSize').value,
-        budgetCap: document.getElementById('budgetCap').value === '' ? '' : parseInt(document.getElementById('budgetCap').value, 10),
-        confirmMode: document.getElementById('confirmMode').value,
         reminderLeadDays: parseInt(document.getElementById('reminderLeadDays').value, 10),
         notifyEnabled: document.getElementById('notifyEnabled').checked
       };
