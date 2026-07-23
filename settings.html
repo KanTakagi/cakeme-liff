@@ -80,6 +80,14 @@
     <h1>設定</h1>
     <p class="note">既定のケーキ・配達先や、通知の受け取り方を設定します。</p>
 
+    <h2>会社情報</h2>
+    <div class="field"><label>会社名</label>
+      <input id="companyName" type="text" maxlength="100"></div>
+    <div class="field"><label>担当者名</label>
+      <input id="contactName" type="text" maxlength="100"></div>
+    <div class="field"><label>電話番号</label>
+      <input id="phone" type="tel" maxlength="30"></div>
+
     <h2>会社デフォルト</h2>
     <div class="field"><label>既定の配達先オフィス</label>
       <select id="defaultSiteId"></select></div>
@@ -119,6 +127,9 @@
       siteSel.innerHTML = '<option value="">（未設定）</option>' +
         (d.sites || []).map(function (s) { return '<option value="' + esc(s.siteId) + '">' + esc(s.siteName) + '</option>'; }).join('');
       siteSel.value = c.defaultSiteId || '';
+      document.getElementById('companyName').value = c.name || '';
+      document.getElementById('contactName').value = (d.contact && d.contact.name) || '';
+      document.getElementById('phone').value = (d.contact && d.contact.phone) || '';
       document.getElementById('defaultSize').value = c.defaultSize || 'M';
       document.getElementById('reminderLeadDays').value = String(c.reminderLeadDays || 3);
       document.getElementById('notifyEnabled').checked = !!(d.contact && d.contact.notifyEnabled);
@@ -127,11 +138,15 @@
     document.getElementById('save').addEventListener('click', function () {
       var btn = this;
       var payload = {
+        companyName: document.getElementById('companyName').value.trim(),
+        contactName: document.getElementById('contactName').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
         defaultSiteId: document.getElementById('defaultSiteId').value,
         defaultSize: document.getElementById('defaultSize').value,
         reminderLeadDays: parseInt(document.getElementById('reminderLeadDays').value, 10),
         notifyEnabled: document.getElementById('notifyEnabled').checked
       };
+      if (!payload.companyName || !payload.contactName) { showErr('会社名・担当者名は必須です'); return; }
       hideErr();
       CAKEME.withLoading(btn, function () {
         return CAKEME.call('updateSettings', payload).then(function () { CAKEME.toast('保存しました'); });
