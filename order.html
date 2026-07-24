@@ -74,6 +74,7 @@
 </style>
 
   <style>
+    .wrap { padding-bottom: 180px; } /* 固定フッターに隠れないよう余白 */
     .cake-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .cake-card { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; cursor: pointer; background: #fff; }
     .cake-card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: #f4f7f5; }
@@ -121,10 +122,9 @@
     <h2>ケーキを追加（タップで選択）</h2>
     <div class="cake-grid" id="cakes"></div>
 
-    <h2>メッセージプレート</h2>
+    <h2>ご要望・リクエスト（自由記入）</h2>
     <div class="field">
-      <input id="plateText" type="text" maxlength="40" placeholder="Happy Birthday!">
-      <div class="tmpl" id="tmpls"></div>
+      <textarea id="plateText" rows="3" maxlength="200" placeholder="例）プレートに「Happy Birthday ○○」と入れてほしい、ろうそく5本、アレルギー対応 など"></textarea>
     </div>
 
     <h2>お届け</h2>
@@ -133,13 +133,13 @@
     <p class="note" id="delivery-date"></p>
 
     <div id="err" class="err hidden"></div>
+    <div style="height:40px"></div>
   </div>
 
   <div class="footer-fix" id="footer" style="display:none">
     <div class="inner">
-      <div class="sum"><span>小計</span><span id="s-sub">0 THB</span></div>
-      <div class="sum"><span>配送料</span><span id="s-fee">0 THB</span></div>
       <div class="sum total"><span>合計</span><span id="s-total">0 THB</span></div>
+      <p class="note" style="margin:2px 0 0;font-size:12px">1,500 THB以上で配送料無料</p>
       <button class="btn-primary" id="confirm" style="margin-top:8px">注文を確定する</button>
     </div>
   </div>
@@ -191,7 +191,9 @@
 
     function setup() {
       var o = D.order;
-      cart = (o.items || []).map(function (it) { return { cakeId: it.cakeId, size: it.size, filling: it.filling || (D.fillings[0] || ''), qty: Math.max(1, it.qty || 1) }; });
+      // 現在のメニューに存在するケーキのみカートに初期化（古い無効IDは除外）
+      cart = (o.items || []).filter(function (it) { return menuOf(it.cakeId); })
+        .map(function (it) { return { cakeId: it.cakeId, size: it.size, filling: it.filling || (D.fillings[0] || ''), qty: Math.max(1, it.qty || 1) }; });
       document.getElementById('target').textContent = o.employeeName + ' さん / お届け ' + o.deliveryDate;
       document.getElementById('delivery-date').textContent = '配達日: ' + o.deliveryDate + '（固定）';
       document.getElementById('plateText').value = o.plateText || '';
@@ -205,13 +207,6 @@
       }).join('');
       document.querySelectorAll('[data-cake]').forEach(function (el) {
         el.addEventListener('click', function () { openModal(el.getAttribute('data-cake')); });
-      });
-
-      document.getElementById('tmpls').innerHTML = (D.plateTemplates || []).map(function (t) {
-        return '<button data-tmpl="' + esc(t) + '">' + esc(t) + '</button>';
-      }).join('');
-      document.querySelectorAll('[data-tmpl]').forEach(function (b) {
-        b.addEventListener('click', function () { document.getElementById('plateText').value = b.getAttribute('data-tmpl'); });
       });
 
       document.getElementById('siteId').innerHTML = D.sites.map(function (s) {
@@ -291,14 +286,12 @@
           b.addEventListener('click', function () { cart.splice(Number(b.getAttribute('data-del')), 1); renderCart(); });
         });
       }
-      // 合計
+      // 合計（配送料は非表示。1500以上で無料）
       var sub = 0; cart.forEach(function (it) { sub += priceOf(it.cakeId, it.size) * it.qty; });
       var siteId = document.getElementById('siteId').value;
       var site = D.sites.filter(function (s) { return s.siteId === siteId; })[0];
       var fee = (site && site.deliveryFee !== '' && site.deliveryFee != null) ? Number(site.deliveryFee) : 0;
       if (sub >= D.freeDeliveryMin) fee = 0;
-      document.getElementById('s-sub').textContent = sub + ' THB';
-      document.getElementById('s-fee').textContent = fee + ' THB';
       document.getElementById('s-total').textContent = (sub + fee) + ' THB';
     }
 
