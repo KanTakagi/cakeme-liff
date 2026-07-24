@@ -116,21 +116,21 @@
     <h1 id="title">誕生日ケーキの注文</h1>
     <p class="note" id="target"></p>
 
+    <h2>① お届け先・時間帯を確認</h2>
+    <div class="field"><label>配達先オフィス</label><select id="siteId"></select></div>
+    <div class="field"><label>配達時間帯</label><select id="timeWindow"></select></div>
+    <p class="note" id="delivery-date"></p>
+
+    <h2>② ケーキを追加（タップで選択）</h2>
+    <div class="cake-grid" id="cakes"></div>
+
     <h2>🛒 選んだケーキ</h2>
     <div id="cart"></div>
 
-    <h2>ケーキを追加（タップで選択）</h2>
-    <div class="cake-grid" id="cakes"></div>
-
-    <h2>ご要望・リクエスト（自由記入）</h2>
+    <h2>③ ご要望・リクエスト（自由記入）</h2>
     <div class="field">
       <textarea id="plateText" rows="3" maxlength="200" placeholder="例）プレートに「Happy Birthday ○○」と入れてほしい、ろうそく5本、アレルギー対応 など"></textarea>
     </div>
-
-    <h2>お届け</h2>
-    <div class="field"><label>配達先</label><select id="siteId"></select></div>
-    <div class="field"><label>時間帯</label><select id="timeWindow"></select></div>
-    <p class="note" id="delivery-date"></p>
 
     <div id="err" class="err hidden"></div>
     <div style="height:40px"></div>
