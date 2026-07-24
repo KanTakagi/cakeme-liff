@@ -75,9 +75,7 @@
 
   <style>
     .cake-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .cake-card { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; cursor: pointer; background: #fff; position: relative; }
-    .cake-card.on { border-color: var(--green-btn); box-shadow: 0 0 0 2px var(--green-btn) inset; }
-    .cake-card.on::after { content: '選択中'; position: absolute; top: 8px; right: 8px; background: var(--green-btn); color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 8px; }
+    .cake-card { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; cursor: pointer; background: #fff; }
     .cake-card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: #f4f7f5; }
     .cake-card .cbody { padding: 8px 10px; }
     .cake-card .cname { font-weight: 600; font-size: 13px; line-height: 1.3; }
@@ -92,17 +90,23 @@
     .sum.total { font-weight: 700; font-size: 16px; }
     .tmpl { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
     .tmpl button { background: #f4f7f5; color: var(--green); border-radius: 8px; padding: 6px 10px; font-size: 12px; }
+    /* カート */
+    .cart-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+    .cart-item .ci-body { flex: 1; }
+    .cart-item .ci-name { font-weight: 600; font-size: 14px; }
+    .cart-item .ci-sub { color: var(--gray); font-size: 12px; margin-top: 2px; }
+    .cart-item .ci-price { font-weight: 600; font-size: 14px; }
+    .cart-item .ci-del { color: var(--danger); font-size: 20px; cursor: pointer; padding: 0 4px; }
+    .cart-empty { color: var(--gray); font-size: 13px; padding: 8px 0; }
     /* モーダル */
     .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; z-index: 100; }
     .modal-bg.show { display: block; }
-    .sheet { position: fixed; left: 0; right: 0; bottom: 0; max-width: 480px; margin: 0 auto; background: #fff;
+    .sheet { display: none; position: fixed; left: 0; right: 0; bottom: 0; max-width: 480px; margin: 0 auto; background: #fff;
       border-radius: 18px 18px 0 0; padding: 16px 18px calc(18px + env(safe-area-inset-bottom)); z-index: 101; max-height: 88vh; overflow-y: auto; }
-    .sheet.show { display: block; } .sheet { display: none; }
+    .sheet.show { display: block; }
     .sheet .m-img { width: 120px; aspect-ratio: 3/4; object-fit: cover; border-radius: 12px; float: right; margin: 0 0 8px 12px; }
     .sheet h3 { margin: 0 0 2px; font-size: 17px; }
     .m-close { position: absolute; top: 12px; right: 14px; font-size: 22px; color: var(--gray); cursor: pointer; }
-    .selected-line { background: #f4f7f5; border-radius: 10px; padding: 10px 12px; font-size: 14px; }
-    .selected-line b { color: var(--green); }
   </style>
 </head>
 <body>
@@ -111,9 +115,10 @@
     <h1 id="title">誕生日ケーキの注文</h1>
     <p class="note" id="target"></p>
 
-    <div class="selected-line" id="selected"></div>
+    <h2>🛒 選んだケーキ</h2>
+    <div id="cart"></div>
 
-    <h2>ケーキを選ぶ（タップで選択）</h2>
+    <h2>ケーキを追加（タップで選択）</h2>
     <div class="cake-grid" id="cakes"></div>
 
     <h2>メッセージプレート</h2>
@@ -132,6 +137,8 @@
 
   <div class="footer-fix" id="footer" style="display:none">
     <div class="inner">
+      <div class="sum"><span>小計</span><span id="s-sub">0 THB</span></div>
+      <div class="sum"><span>配送料</span><span id="s-fee">0 THB</span></div>
       <div class="sum total"><span>合計</span><span id="s-total">0 THB</span></div>
       <button class="btn-primary" id="confirm" style="margin-top:8px">注文を確定する</button>
     </div>
@@ -154,7 +161,7 @@
       <span id="m-qval">1</span>
       <button type="button" id="m-plus">＋</button>
     </div>
-    <button class="btn-primary" id="m-add" style="margin-top:16px">この内容にする</button>
+    <button class="btn-primary" id="m-add" style="margin-top:16px">🛒 カートに追加</button>
   </div>
 
   <div class="wrap ok-box hidden" id="done">
@@ -166,11 +173,7 @@
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script><script src="./config.js"></script><script src="./shared_liff_web.js"></script>
   <script>
-    var D = null;
-    // 確定済みの選択（footer/確定に使う）
-    var sel = { cakeId: '', size: '', filling: '', qty: 1 };
-    // モーダル内の作業中の選択
-    var work = { cakeId: '', size: '', filling: '', qty: 1 };
+    var D = null, cart = [], work = { cakeId: '', size: '', filling: '', qty: 1 };
     var LIFF_PARAMS = null;
     var draftId = (LIFF_PARAMS && LIFF_PARAMS.draft) || new URLSearchParams(location.search).get('draft');
 
@@ -188,7 +191,7 @@
 
     function setup() {
       var o = D.order;
-      sel = { cakeId: o.cakeId, size: o.size, filling: o.flavor || (D.fillings[0] || ''), qty: Math.max(1, o.qty || 1) };
+      cart = (o.items || []).map(function (it) { return { cakeId: it.cakeId, size: it.size, filling: it.filling || (D.fillings[0] || ''), qty: Math.max(1, it.qty || 1) }; });
       document.getElementById('target').textContent = o.employeeName + ' さん / お届け ' + o.deliveryDate;
       document.getElementById('delivery-date').textContent = '配達日: ' + o.deliveryDate + '（固定）';
       document.getElementById('plateText').value = o.plateText || '';
@@ -215,13 +218,13 @@
         return '<option value="' + esc(s.siteId) + '">' + esc(s.siteName) + '</option>';
       }).join('') || '<option value="">（拠点未登録）</option>';
       document.getElementById('siteId').value = o.siteId || '';
-      document.getElementById('siteId').addEventListener('change', renderSelected);
+      document.getElementById('siteId').addEventListener('change', renderCart);
       document.getElementById('timeWindow').innerHTML = (D.timeWindows || []).map(function (t) {
         return '<option value="' + esc(t) + '">' + esc(t) + '</option>';
       }).join('');
       document.getElementById('timeWindow').value = o.timeWindow || '';
 
-      renderCards(); renderSelected();
+      renderCart();
       document.getElementById('app').style.display = '';
       document.getElementById('footer').style.display = '';
     }
@@ -229,20 +232,12 @@
     // ---- モーダル ----
     function openModal(cakeId) {
       var m = menuOf(cakeId); if (!m) return;
-      // 初期値: 選択中と同じケーキなら現在値、違えば先頭サイズ
-      work = {
-        cakeId: cakeId,
-        size: (cakeId === sel.cakeId) ? sel.size : (m.sizes[0] ? m.sizes[0].size : ''),
-        filling: sel.filling || (D.fillings[0] || ''),
-        qty: (cakeId === sel.cakeId) ? sel.qty : 1
-      };
+      work = { cakeId: cakeId, size: (m.sizes[0] ? m.sizes[0].size : ''), filling: (D.fillings[0] || ''), qty: 1 };
       document.getElementById('m-img').src = m.imageUrl || '';
       document.getElementById('m-name').textContent = m.name;
-      document.getElementById('m-filling').innerHTML =
-        ((D.fillings && D.fillings.length) ? D.fillings : ['(なし)']).map(function (f) { return '<option>' + esc(f) + '</option>'; }).join('');
       var mf = document.getElementById('m-filling');
-      if (work.filling) mf.value = work.filling;
-      if (!mf.value && mf.options.length) mf.selectedIndex = 0; // 未マッチなら先頭を既定
+      mf.innerHTML = ((D.fillings && D.fillings.length) ? D.fillings : ['(なし)']).map(function (f) { return '<option>' + esc(f) + '</option>'; }).join('');
+      if (!mf.value && mf.options.length) mf.selectedIndex = 0;
       work.filling = mf.value;
       document.getElementById('m-qval').textContent = work.qty;
       renderModalSizes(); renderModalPrice();
@@ -273,35 +268,45 @@
     document.getElementById('m-close').addEventListener('click', closeModal);
     document.getElementById('modal-bg').addEventListener('click', closeModal);
     document.getElementById('m-add').addEventListener('click', function () {
-      sel = { cakeId: work.cakeId, size: work.size, filling: work.filling, qty: work.qty };
-      closeModal(); renderCards(); renderSelected();
+      cart.push({ cakeId: work.cakeId, size: work.size, filling: work.filling, qty: work.qty });
+      closeModal(); renderCart();
+      CAKEME.toast('カートに追加しました');
     });
 
-    // ---- 選択表示 ----
-    function renderCards() {
-      document.querySelectorAll('[data-cake]').forEach(function (el) {
-        el.classList.toggle('on', el.getAttribute('data-cake') === sel.cakeId);
-      });
-    }
-    function renderSelected() {
-      var m = menuOf(sel.cakeId);
-      var price = priceOf(sel.cakeId, sel.size);
-      var sub = price * sel.qty;
+    // ---- カート表示 ----
+    function renderCart() {
+      var el = document.getElementById('cart');
+      if (!cart.length) { el.innerHTML = '<p class="cart-empty">下のケーキをタップして追加してください</p>'; }
+      else {
+        el.innerHTML = cart.map(function (it, i) {
+          var m = menuOf(it.cakeId);
+          var line = priceOf(it.cakeId, it.size) * it.qty;
+          return '<div class="cart-item">' +
+            '<div class="ci-body"><div class="ci-name">' + esc(m ? m.name : it.cakeId) + '（' + esc(it.size) + '）× ' + it.qty + '</div>' +
+            '<div class="ci-sub">中身: ' + esc(it.filling || '-') + '</div></div>' +
+            '<div class="ci-price">' + line + ' THB</div>' +
+            '<span class="ci-del" data-del="' + i + '">×</span></div>';
+        }).join('');
+        el.querySelectorAll('[data-del]').forEach(function (b) {
+          b.addEventListener('click', function () { cart.splice(Number(b.getAttribute('data-del')), 1); renderCart(); });
+        });
+      }
+      // 合計
+      var sub = 0; cart.forEach(function (it) { sub += priceOf(it.cakeId, it.size) * it.qty; });
       var siteId = document.getElementById('siteId').value;
       var site = D.sites.filter(function (s) { return s.siteId === siteId; })[0];
       var fee = (site && site.deliveryFee !== '' && site.deliveryFee != null) ? Number(site.deliveryFee) : 0;
       if (sub >= D.freeDeliveryMin) fee = 0;
-      document.getElementById('selected').innerHTML = m
-        ? '選択中：<b>' + esc(m.name) + '</b>（' + esc(sel.size) + '）× ' + sel.qty + '<br>中身：' + esc(sel.filling || '-') + ' ／ 小計 ' + sub + ' THB' + (fee ? '＋配送 ' + fee : '')
-        : 'ケーキを選んでください';
+      document.getElementById('s-sub').textContent = sub + ' THB';
+      document.getElementById('s-fee').textContent = fee + ' THB';
       document.getElementById('s-total').textContent = (sub + fee) + ' THB';
     }
 
     document.getElementById('confirm').addEventListener('click', function () {
       var btn = this;
-      if (!sel.cakeId || !sel.size) { CAKEME.toast('ケーキを選んでください'); return; }
+      if (!cart.length) { CAKEME.toast('ケーキを追加してください'); return; }
       var changes = {
-        cakeId: sel.cakeId, size: sel.size, flavor: sel.filling, qty: sel.qty,
+        items: cart,
         plateText: document.getElementById('plateText').value.trim(),
         siteId: document.getElementById('siteId').value,
         timeWindow: document.getElementById('timeWindow').value
