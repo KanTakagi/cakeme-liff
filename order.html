@@ -182,7 +182,16 @@
       if (!draftId) { showFatal('注文が指定されていません'); return; }
       CAKEME.call('getOrderDraft', { draftId: draftId }).then(function (d) {
         D = d;
-        if (!d.editable) { showFatal('この注文はすでに確定/処理済みです'); return; }
+        if (!d.editable) {
+          var name = (d.order && d.order.employeeName) || '';
+          var st = d.order && d.order.status;
+          var msg;
+          if (st === 'cancelled') msg = name + ' さんの誕生日ケーキの注文は キャンセル済み です。';
+          else if (st === 'skipped') msg = name + ' さんの誕生日ケーキは 今回スキップ されています。';
+          else msg = '既に ' + name + ' さんの誕生日ケーキは 注文済み です。';
+          showFatal(msg);
+          return;
+        }
         setup();
       }).catch(function (e) { showFatal(e.message); });
     });
