@@ -141,7 +141,8 @@
     <div class="inner">
       <div class="sum total"><span>合計</span><span id="s-total">0 THB</span></div>
       <p class="note" style="margin:2px 0 0;font-size:12px">1,500 THB以上で配送料無料</p>
-      <button class="btn-primary" id="confirm" style="margin-top:8px">注文を確定する</button>
+      <button class="btn-primary" id="confirm" style="margin-top:8px">注文する</button>
+      <button class="btn-ghost" id="cancel-order" style="margin-top:6px;display:none;color:var(--danger)">この注文をキャンセル</button>
     </div>
   </div>
 
@@ -228,6 +229,22 @@
         return '<option value="' + esc(t) + '">' + esc(t) + '</option>';
       }).join('');
       document.getElementById('timeWindow').value = o.timeWindow || '';
+
+      // 既に注文済み（未入金）なら「変更」モード＋キャンセルボタンを出す
+      if (o.status && o.status !== 'draft') {
+        document.getElementById('confirm').textContent = '変更を確定する';
+        var cb = document.getElementById('cancel-order');
+        cb.style.display = '';
+        cb.addEventListener('click', function () {
+          if (!confirm('この注文をキャンセルしますか？\nお支払い前なので、もう一度ご注文いただけます。')) return;
+          CAKEME.withLoading(cb, function () {
+            return CAKEME.call('cancelOrder', { orderId: draftId }).then(function () {
+              CAKEME.toast('キャンセルしました');
+              setTimeout(function () { location.reload(); }, 1000); // 空の下書きで再注文可能に
+            });
+          });
+        });
+      }
 
       renderCart();
       document.getElementById('app').style.display = '';

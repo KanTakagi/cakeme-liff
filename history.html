@@ -128,20 +128,23 @@
       var list = document.getElementById('list');
       if (!orders.length) { list.innerHTML = '<p class="muted">該当する注文はありません</p>'; return; }
       list.innerHTML = orders.map(function (o) {
+        var pay = o.paid
+          ? '<span class="chip" style="background:#e6f2ea;color:#0c6b41">入金済み</span>'
+          : '<span class="chip" style="background:#fbf0dd;color:#b5711a">支払い待ち</span>';
         return '<div class="list-item">' +
           '<span class="name">' + esc(o.employeeName) + '<br>' +
             '<span class="muted" style="font-weight:400;font-size:13px">' + esc(o.cake) + ' / ' + o.total + ' THB</span></span>' +
-          '<span class="date">' + esc(o.deliveryDate) + '<br><span class="chip">' + (STATUS_LABEL[o.status] || o.status) + '</span></span>' +
+          '<span class="date">' + esc(o.deliveryDate) + '<br><span class="chip">' + (STATUS_LABEL[o.status] || o.status) + '</span> ' + pay + '</span>' +
           (o.cancellable ? '<button class="btn-ghost btn-sm" data-cancel="' + esc(o.orderId) + '">取消</button>' : '') +
           '</div>';
       }).join('');
 
       list.querySelectorAll('button[data-cancel]').forEach(function (b) {
         b.addEventListener('click', function () {
-          if (!confirm('この注文をキャンセルしますか？')) return;
+          if (!confirm('この注文をキャンセルしますか？\nお支払い前なので、もう一度ご注文いただけます。')) return;
           CAKEME.withLoading(b, function () {
             return CAKEME.call('cancelOrder', { orderId: b.getAttribute('data-cancel') }).then(function () {
-              CAKEME.toast('キャンセルしました'); load();
+              CAKEME.toast('キャンセルしました。「ケーキを選んで注文」から再注文できます'); load();
             });
           });
         });
