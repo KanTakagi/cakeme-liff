@@ -179,6 +179,13 @@
     var LIFF_PARAMS = null;
     var draftId = (LIFF_PARAMS && LIFF_PARAMS.draft) || new URLSearchParams(location.search).get('draft');
 
+    // 人数表記の「名/人」を言語化（例 "3-4名" → "3-4 คน" / "3-4 servings"）。数字のみはそのまま。
+    function servesLabel(s) {
+      s = String(s || '');
+      var m = s.match(/^(.+?)\s*([名人])$/);
+      return m ? t('{n}' + m[2], { n: m[1] }) : s;
+    }
+
     CAKEME.init(function () {
       if (!draftId) { showFatal(t('注文が指定されていません')); return; }
       CAKEME.call('getOrderDraft', { draftId: draftId }).then(function (d) {
@@ -274,7 +281,7 @@
       var m = menuOf(work.cakeId), sizes = m ? m.sizes : [];
       if (!sizes.some(function (s) { return s.size === work.size; })) work.size = sizes[0] ? sizes[0].size : '';
       document.getElementById('m-sizes').innerHTML = sizes.map(function (s) {
-        return '<button data-msize="' + esc(s.size) + '">' + esc(s.size) + '<br><span style="font-size:11px">' + esc(s.serves) + '</span></button>';
+        return '<button data-msize="' + esc(s.size) + '">' + esc(s.size) + '<br><span style="font-size:11px">' + esc(servesLabel(s.serves)) + '</span></button>';
       }).join('');
       document.querySelectorAll('[data-msize]').forEach(function (b) {
         b.classList.toggle('on', b.getAttribute('data-msize') === work.size);

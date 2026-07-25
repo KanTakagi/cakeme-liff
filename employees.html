@@ -146,7 +146,8 @@
           '<span class="name" style="' + (inactive ? 'opacity:.4;text-decoration:line-through' : '') + '">' + esc(e.displayName) + '</span>' +
           '<span class="date">' + mmdd + '</span>' +
           (x.saved
-            ? '<button class="btn-ghost btn-sm" data-id="' + esc(e.employeeId) + '" data-act="' + (inactive ? 'true' : 'false') + '">' + (inactive ? '復帰' : '在籍off') + '</button>'
+            ? '<button class="btn-ghost btn-sm" data-edit="' + esc(e.employeeId) + '">編集</button> ' +
+              '<button class="btn-ghost btn-sm" data-id="' + esc(e.employeeId) + '" data-act="' + (inactive ? 'true' : 'false') + '">' + (inactive ? '復帰' : '在籍off') + '</button>'
             : '<span class="chip">未保存</span> <button class="btn-ghost btn-sm" data-pending="' + idx + '">削除</button>') +
           '</div>';
       }).join('') || '<p class="muted">まだありません</p>';
@@ -161,6 +162,26 @@
               if (emp) emp.active = act; render();
             });
           });
+        });
+      });
+      // 編集（表示名・誕生日）
+      list.querySelectorAll('button[data-edit]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var id = b.getAttribute('data-edit');
+          var emp = employees.filter(function (x) { return x.employeeId === id; })[0];
+          if (!emp) return;
+          var name = prompt(t('表示名'), emp.displayName);
+          if (name === null) return;
+          var mo = prompt(t('月') + ' (1-12)', emp.birthMonth);
+          if (mo === null) return;
+          var dy = prompt(t('日') + ' (1-31)', emp.birthDay);
+          if (dy === null) return;
+          CAKEME.call('updateEmployee', { employeeId: id, displayName: name, birthMonth: mo, birthDay: dy })
+            .then(function () {
+              emp.displayName = name.trim(); emp.birthMonth = +mo; emp.birthDay = +dy;
+              CAKEME.toast(t('保存しました')); render();
+            })
+            .catch(function (e) { CAKEME.toast(t('エラー: ') + e.message); });
         });
       });
       // 未保存削除（data-pendingはソート後indexなので名前で消す）
