@@ -180,16 +180,16 @@
     var draftId = (LIFF_PARAMS && LIFF_PARAMS.draft) || new URLSearchParams(location.search).get('draft');
 
     CAKEME.init(function () {
-      if (!draftId) { showFatal('注文が指定されていません'); return; }
+      if (!draftId) { showFatal(t('注文が指定されていません')); return; }
       CAKEME.call('getOrderDraft', { draftId: draftId }).then(function (d) {
         D = d;
         if (!d.editable) {
           var name = (d.order && d.order.employeeName) || '';
           var st = d.order && d.order.status;
           var msg;
-          if (st === 'cancelled') msg = name + ' さんの誕生日ケーキの注文は キャンセル済み です。';
-          else if (st === 'skipped') msg = name + ' さんの誕生日ケーキは 今回スキップ されています。';
-          else msg = '既に ' + name + ' さんの誕生日ケーキは 注文済み です。';
+          if (st === 'cancelled') msg = t('{name} さんの誕生日ケーキの注文は キャンセル済み です。', { name: name });
+          else if (st === 'skipped') msg = t('{name} さんの誕生日ケーキは 今回スキップ されています。', { name: name });
+          else msg = t('既に {name} さんの誕生日ケーキは 注文済み です。', { name: name });
           showFatal(msg);
           return;
         }
@@ -205,8 +205,8 @@
       // 現在のメニューに存在するケーキのみカートに初期化（古い無効IDは除外）
       cart = (o.items || []).filter(function (it) { return menuOf(it.cakeId); })
         .map(function (it) { return { cakeId: it.cakeId, size: it.size, filling: it.filling || (D.fillings[0] || ''), qty: Math.max(1, it.qty || 1) }; });
-      document.getElementById('target').textContent = o.employeeName + ' さん / お届け ' + o.deliveryDate;
-      document.getElementById('delivery-date').textContent = '配達日: ' + o.deliveryDate + '（固定）';
+      document.getElementById('target').textContent = t('{name} さん / お届け {date}', { name: o.employeeName, date: o.deliveryDate });
+      document.getElementById('delivery-date').textContent = t('配達日: {date}（固定）', { date: o.deliveryDate });
       document.getElementById('plateText').value = o.plateText || '';
 
       document.getElementById('cakes').innerHTML = D.menu.map(function (m) {
@@ -232,7 +232,7 @@
 
       // 既に注文済み（未入金）なら「変更」モード＋キャンセルボタンを出す
       if (o.status && o.status !== 'draft') {
-        document.getElementById('confirm').textContent = '変更を確定する';
+        document.getElementById('confirm').textContent = t('変更を確定する');
         var cb = document.getElementById('cancel-order');
         cb.style.display = '';
         cb.addEventListener('click', function () {
@@ -305,7 +305,7 @@
           var line = priceOf(it.cakeId, it.size) * it.qty;
           return '<div class="cart-item">' +
             '<div class="ci-body"><div class="ci-name">' + esc(m ? m.name : it.cakeId) + '（' + esc(it.size) + '）× ' + it.qty + '</div>' +
-            '<div class="ci-sub">中身: ' + esc(it.filling || '-') + '</div></div>' +
+            '<div class="ci-sub">' + esc(t('中身: {filling}', { filling: it.filling || '-' })) + '</div></div>' +
             '<div class="ci-price">' + line + ' THB</div>' +
             '<span class="ci-del" data-del="' + i + '">×</span></div>';
         }).join('');
@@ -336,9 +336,9 @@
           document.getElementById('app').style.display = 'none';
           document.getElementById('footer').style.display = 'none';
           document.getElementById('done').classList.remove('hidden');
-          document.querySelector('#done h1').textContent = res.changed ? '注文を変更しました' : '注文を確定しました';
+          document.querySelector('#done h1').textContent = t(res.changed ? '注文を変更しました' : '注文を確定しました');
           document.getElementById('done-msg').textContent =
-            '注文番号 ' + (res.orderNo || res.orderId) + ' / 合計 ' + res.total + ' THB';
+            t('注文番号 {orderNo} / 合計 {total} THB', { orderNo: res.orderNo || res.orderId, total: res.total });
         });
       });
     });

@@ -182,9 +182,9 @@
       CAKEME.withLoading(btn, function () {
         return CAKEME.call('upsertEmployees', { employees: pending }).then(function (res) {
           if (res.errors && res.errors.length) {
-            showErr(res.errors.length + '件エラー: ' + res.errors.map(function (x) { return x.displayName + '(' + x.error + ')'; }).join(' / '));
+            showErr(t('{n}件エラー: {detail}', { n: res.errors.length, detail: res.errors.map(function (x) { return x.displayName + '(' + x.error + ')'; }).join(' / ') }));
           } else { hideErr(); }
-          CAKEME.toast(res.added + '件を保存しました');
+          CAKEME.toast(t('{n}件を保存しました', { n: res.added }));
           pending = [];
           return CAKEME.call('getBootstrap', {}).then(function (d) { employees = d.employees || []; render(); });
         });

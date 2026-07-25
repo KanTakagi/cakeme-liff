@@ -145,6 +145,9 @@
     '復帰': { th: 'กลับมา', en: 'Reactivate' },
     '表示名・月(1-12)・日(1-31)を入力してください': { th: 'กรุณากรอกชื่อ, เดือน(1-12) และวัน(1-31) ค่ะ', en: 'Enter display name, month (1-12) and day (1-31).' },
     '追加分がありません': { th: 'ไม่มีรายการที่จะเพิ่มค่ะ', en: 'Nothing to add.' },
+    '未保存': { th: 'ยังไม่บันทึก', en: 'Unsaved' },
+    '{n}件を保存しました': { th: 'บันทึก {n} รายการแล้วค่ะ', en: 'Saved {n} entries' },
+    '{n}件エラー: {detail}': { th: 'ผิดพลาด {n} รายการ: {detail}', en: '{n} errors: {detail}' },
 
     // ---- 履歴 ----
     '注文履歴': { th: 'ประวัติการสั่งซื้อ', en: 'Order history' },
@@ -193,6 +196,20 @@
     '注文が指定されていません': { th: 'ยังไม่ได้ระบุออเดอร์ค่ะ', en: 'No order specified.' },
     'この注文をキャンセルしますか？\nお支払い前なので、もう一度ご注文いただけます。': { th: 'ต้องการยกเลิกออเดอร์นี้ไหมคะ?\nยังไม่ได้ชำระเงิน จึงสามารถสั่งใหม่ได้ค่ะ', en: 'Cancel this order?\nIt\'s unpaid, so you can order again.' },
     '以上で配送料無料': { th: 'ขึ้นไป ส่งฟรี', en: 'or more: free delivery' },
+    '1,500 THB以上で配送料無料': { th: 'สั่งครบ 1,500 บาทขึ้นไป ส่งฟรีค่ะ', en: 'Free delivery for orders of 1,500 THB or more' },
+    '合計': { th: 'รวม', en: 'Total' },
+    '（拠点未登録）': { th: '(ยังไม่มีสาขา)', en: '(No site registered)' },
+    '(なし)': { th: '(ไม่มี)', en: '(none)' },
+    // 動的（{var}で数値・名前を差し込む）
+    '中身: {filling}': { th: 'ไส้: {filling}', en: 'Filling: {filling}' },
+    '{name} さん / お届け {date}': { th: 'คุณ {name} / จัดส่ง {date}', en: '{name} / Delivery {date}' },
+    '配達日: {date}（固定）': { th: 'วันจัดส่ง: {date} (กำหนดแล้ว)', en: 'Delivery date: {date} (fixed)' },
+    '注文番号 {orderNo} / 合計 {total} THB': { th: 'เลขที่ออเดอร์ {orderNo} / รวม {total} บาท', en: 'Order No {orderNo} / Total {total} THB' },
+    '注文を確定しました': { th: 'รับออเดอร์เรียบร้อยแล้วค่ะ 🎂', en: 'Your order is placed 🎂' },
+    '注文を変更しました': { th: 'แก้ไขออเดอร์เรียบร้อยแล้วค่ะ 🎂', en: 'Your order has been updated 🎂' },
+    '{name} さんの誕生日ケーキの注文は キャンセル済み です。': { th: 'ออเดอร์เค้กวันเกิดของคุณ {name} ถูกยกเลิกแล้วค่ะ', en: 'The birthday cake order for {name} has been cancelled.' },
+    '{name} さんの誕生日ケーキは 今回スキップ されています。': { th: 'เค้กวันเกิดของคุณ {name} ถูกข้ามในครั้งนี้ค่ะ', en: 'The birthday cake for {name} was skipped this time.' },
+    '既に {name} さんの誕生日ケーキは 注文済み です。': { th: 'เค้กวันเกิดของคุณ {name} ถูกสั่งไว้แล้วค่ะ', en: '{name}\'s birthday cake has already been ordered.' },
 
     // ---- 会社登録案内 ----
     'ご登録の手続き中です': { th: 'กำลังดำเนินการลงทะเบียนค่ะ', en: 'Registration in progress' },
