@@ -336,7 +336,9 @@
           document.getElementById('app').style.display = 'none';
           document.getElementById('footer').style.display = 'none';
           document.getElementById('done').classList.remove('hidden');
-          document.getElementById('done-msg').textContent = '注文番号 ' + res.orderId + ' / 合計 ' + res.total + ' THB';
+          document.querySelector('#done h1').textContent = res.changed ? '注文を変更しました' : '注文を確定しました';
+          document.getElementById('done-msg').textContent =
+            '注文番号 ' + (res.orderNo || res.orderId) + ' / 合計 ' + res.total + ' THB';
         });
       });
     });
