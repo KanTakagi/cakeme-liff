@@ -236,7 +236,7 @@
         var cb = document.getElementById('cancel-order');
         cb.style.display = '';
         cb.addEventListener('click', function () {
-          if (!confirm('この注文をキャンセルしますか？\nお支払い前なので、もう一度ご注文いただけます。')) return;
+          if (!confirm(t('この注文をキャンセルしますか？\nお支払い前なので、もう一度ご注文いただけます。'))) return;
           CAKEME.withLoading(cb, function () {
             return CAKEME.call('cancelOrder', { orderId: draftId }).then(function () {
               CAKEME.toast('キャンセルしました');
