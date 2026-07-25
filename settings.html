@@ -89,6 +89,12 @@
       <input id="phone" type="tel" maxlength="30"></div>
 
     <h2>会社デフォルト</h2>
+    <div class="field"><label>言語 / ภาษา / Language</label>
+      <select id="lang">
+        <option value="th">ไทย (Thai)</option>
+        <option value="en">English</option>
+      </select>
+      <p class="note">お客様（担当者）に届くLINEメッセージ・注文画面の言語です。既定はタイ語。</p></div>
     <div class="field"><label>既定の配達先オフィス</label>
       <select id="defaultSiteId"></select></div>
     <div class="field"><label>既定のケーキサイズ</label>
@@ -126,6 +132,7 @@
       document.getElementById('contactName').value = (d.contact && d.contact.name) || '';
       document.getElementById('phone').value = (d.contact && d.contact.phone) || '';
       document.getElementById('defaultSize').value = c.defaultSize || 'M';
+      document.getElementById('lang').value = (c.lang === 'en') ? 'en' : 'th';
       document.getElementById('notifyEnabled').checked = !!(d.contact && d.contact.notifyEnabled);
     }
 
@@ -137,6 +144,7 @@
         phone: document.getElementById('phone').value.trim(),
         defaultSiteId: document.getElementById('defaultSiteId').value,
         defaultSize: document.getElementById('defaultSize').value,
+        lang: document.getElementById('lang').value,
         notifyEnabled: document.getElementById('notifyEnabled').checked
       };
       if (!payload.companyName || !payload.contactName) { showErr('会社名・担当者名は必須です'); return; }
