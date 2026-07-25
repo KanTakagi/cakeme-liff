@@ -16,10 +16,12 @@ const ROOT = path.join(__dirname, '..');
 const OUT = __dirname;
 const sharedHead = fs.readFileSync(path.join(ROOT, 'shared_head.html'), 'utf8');
 
+// ビルドごとにバージョンを付与（LINE内ブラウザのキャッシュで古いJSが残るのを防ぐ）
+const V = 'v=' + Date.now();
 const liffHead =
   '<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>' +
-  '<script src="./config.js"></script>' +
-  '<script src="./shared_liff_web.js"></script>';
+  '<script src="./config.js?' + V + '"></script>' +
+  '<script src="./shared_liff_web.js?' + V + '"></script>';
 
 const pages = fs.readdirSync(ROOT).filter(f => /^page_.*\.html$/.test(f) && f !== 'page_admin.html');
 

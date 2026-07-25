@@ -192,6 +192,10 @@
     '個数': { th: 'จำนวน', en: 'Quantity' },
     '{n}名': { th: '{n} คน', en: '{n} servings' },
     '{n}人': { th: '{n} คน', en: '{n} servings' },
+    // フィリング（中身）— データが日本語のため表示時に翻訳
+    'バニラ + ココナッツソース': { th: 'วานิลลา + ซอสมะพร้าว', en: 'Vanilla + Coconut sauce' },
+    'バニラ + ストロベリージャム': { th: 'วานิลลา + แยมสตรอว์เบอร์รี', en: 'Vanilla + Strawberry jam' },
+    'チョコ + チョコソース': { th: 'ช็อกโกแลต + ซอสช็อกโกแลต', en: 'Chocolate + Chocolate sauce' },
     'カートに追加': { th: 'เพิ่มลงตะกร้า', en: 'Add to cart' },
     'カートに追加しました': { th: 'เพิ่มลงตะกร้าแล้วค่ะ', en: 'Added to cart' },
     'キャンセルしました': { th: 'ยกเลิกแล้วค่ะ', en: 'Cancelled' },
