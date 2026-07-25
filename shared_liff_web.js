@@ -118,8 +118,8 @@
     'ケーキをお届けするオフィスを登録します。複数拠点も追加できます。': { th: 'ลงทะเบียนออฟฟิศสำหรับจัดส่งเค้ก เพิ่มได้หลายสาขาค่ะ', en: 'Register offices for cake delivery. You can add multiple sites.' },
     '拠点を追加': { th: 'เพิ่มสาขา', en: 'Add site' },
     '拠点を編集': { th: 'แก้ไขสาขา', en: 'Edit site' },
-    '拠点名 ': { th: 'ชื่อสาขา', en: 'Site name' },
-    '住所 ': { th: 'ที่อยู่', en: 'Address' },
+    '拠点名': { th: 'ชื่อสาขา', en: 'Site name' },
+    '住所': { th: 'ที่อยู่', en: 'Address' },
     'フロア・受付情報': { th: 'ชั้น/จุดรับของ', en: 'Floor / reception' },
     '受取担当': { th: 'ผู้รับ', en: 'Receiver' },
     '配達可能時間帯': { th: 'ช่วงเวลาที่จัดส่งได้', en: 'Available delivery time' },
@@ -137,8 +137,12 @@
     'まとめて登録したい場合は、リスト（Excel/CSV）をCAKEME事務局へお送りください。こちらで取り込みます。': { th: 'หากต้องการลงทะเบียนจำนวนมาก กรุณาส่งไฟล์รายชื่อ (Excel/CSV) มาที่ทีมงาน CAKEME เราจะนำเข้าให้ค่ะ', en: 'To register many at once, send your list (Excel/CSV) to the CAKEME team and we\'ll import it.' },
     'ニックネーム': { th: 'ชื่อเล่น', en: 'Nickname' },
     '表示名': { th: 'ชื่อที่แสดง', en: 'Display name' },
-    '表示名 ': { th: 'ชื่อที่แสดง', en: 'Display name' },
     '誕生日（月・日）': { th: 'วันเกิด (เดือน/วัน)', en: 'Birthday (month/day)' },
+    '月': { th: 'เดือน', en: 'Month' },
+    '日': { th: 'วัน', en: 'Day' },
+    '入力は表示名と誕生日（月・日）だけです。': { th: 'กรอกเพียงชื่อที่แสดงและวันเกิด (เดือน/วัน) เท่านั้นค่ะ', en: 'Just enter the display name and birthday (month/day).' },
+    '登録済み（': { th: 'ลงทะเบียนแล้ว (', en: 'Registered (' },
+    '名）': { th: ' คน)', en: ')' },
     'リストに追加': { th: 'เพิ่มในรายการ', en: 'Add to list' },
     '本名でなくてOK（ニックネーム推奨）。生年は不要です。': { th: 'ไม่จำเป็นต้องเป็นชื่อจริง (แนะนำชื่อเล่น) ไม่ต้องระบุปีเกิดค่ะ', en: 'Real name not required (nickname recommended). Birth year not needed.' },
     '在籍off': { th: 'ไม่อยู่แล้ว', en: 'Inactive' },
@@ -235,14 +239,29 @@
     return s;
   };
 
-  function repl(orig) {
-    var key = String(orig).trim();
-    if (!key) return null;
+  function lookup(key) {
     var e = I18N[key];
     if (!e) return null;
     var rep = (e[window.LANG] != null) ? e[window.LANG] : e.th;
-    if (rep == null) return null;
-    return String(orig).replace(key, rep);
+    return (rep == null) ? null : rep;
+  }
+  // 先頭装飾（丸数字①②③・絵文字・＋−記号）＋空白の並び
+  var DECO_RE = /^((?:[①-⑳]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDD00-\uDFFF]|[☀-➿⬀-⯿️]|[＋－−#•・►▶*])\s*)+/;
+  function repl(orig) {
+    var raw = String(orig);
+    var key = raw.trim();
+    if (!key) return null;
+    // 1) 完全一致
+    var r = lookup(key);
+    if (r != null) return raw.replace(key, r);
+    // 2) 先頭の装飾を剥がして本文だけで再マッチ（「① お届け先…」等）
+    var m = key.match(DECO_RE);
+    if (m) {
+      var deco = m[0], body = key.slice(deco.length);
+      var rb = lookup(body);
+      if (rb != null) return raw.replace(key, deco + rb);
+    }
+    return null;
   }
 
   function translateTextNode(node) {
