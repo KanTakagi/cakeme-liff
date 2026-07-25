@@ -95,12 +95,7 @@
       <select id="defaultSize"><option>S</option><option>M</option><option>L</option></select></div>
 
     <h2>通知</h2>
-    <div class="field"><label>リマインドを送るタイミング</label>
-      <select id="reminderLeadDays">
-        <option value="2">誕生日の2営業日前</option>
-        <option value="3">誕生日の3営業日前</option>
-        <option value="5">誕生日の5営業日前</option>
-      </select></div>
+    <p class="note">ご注文のお知らせは、各従業員の<b>誕生日の前日</b>に届きます。</p>
     <div class="field">
       <label><input type="checkbox" id="notifyEnabled" style="width:auto;vertical-align:-2px"> この端末（担当者）に通知を受け取る</label>
     </div>
@@ -131,7 +126,6 @@
       document.getElementById('contactName').value = (d.contact && d.contact.name) || '';
       document.getElementById('phone').value = (d.contact && d.contact.phone) || '';
       document.getElementById('defaultSize').value = c.defaultSize || 'M';
-      document.getElementById('reminderLeadDays').value = String(c.reminderLeadDays || 3);
       document.getElementById('notifyEnabled').checked = !!(d.contact && d.contact.notifyEnabled);
     }
 
@@ -143,7 +137,6 @@
         phone: document.getElementById('phone').value.trim(),
         defaultSiteId: document.getElementById('defaultSiteId').value,
         defaultSize: document.getElementById('defaultSize').value,
-        reminderLeadDays: parseInt(document.getElementById('reminderLeadDays').value, 10),
         notifyEnabled: document.getElementById('notifyEnabled').checked
       };
       if (!payload.companyName || !payload.contactName) { showErr('会社名・担当者名は必須です'); return; }
