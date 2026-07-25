@@ -214,7 +214,7 @@
         var img = m.imageUrl ? '<img src="' + esc(m.imageUrl) + '" loading="lazy" alt="">' : '';
         return '<div class="cake-card" data-cake="' + esc(m.cakeId) + '">' + img +
           '<div class="cbody"><div class="cname">' + esc(m.name) + '</div>' +
-          '<div class="cprice">' + minP + ' THB〜</div></div></div>';
+          '<div class="cprice">' + esc(t('{price} THB〜', { price: minP })) + '</div></div></div>';
       }).join('');
       document.querySelectorAll('[data-cake]').forEach(function (el) {
         el.addEventListener('click', function () { openModal(el.getAttribute('data-cake')); });

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="th">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -7,11 +7,22 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body style="font-family:sans-serif;padding:20px;color:#5B6B62">
-  <p>読み込み中…</p>
+  <p id="loading">กำลังโหลด…</p>
   <script src="./config.js"></script>
   <script>
     // LIFFの入口(エンドポイント)。開かれた page に応じて各画面へ振り分ける。
     (function () {
+      // shared_liff_web.js は読み込まない軽量ページなので、最小限の翻訳をここで持つ
+      var LANG = 'th';
+      try { LANG = localStorage.getItem('cakeme_lang') || 'th'; } catch (e) {}
+      var MSG = {
+        loading: { th: 'กำลังโหลด…', en: 'Loading…' },
+        noSdk: { th: 'โหลด LIFF SDK ไม่สำเร็จค่ะ', en: 'Failed to load the LIFF SDK' },
+        initErr: { th: 'เกิดข้อผิดพลาดตอนเริ่มต้น: ', en: 'Initialization error: ' }
+      };
+      function msg(k) { var e = MSG[k]; return (e && e[LANG]) || e.th; }
+      try { document.documentElement.lang = (LANG === 'en') ? 'en' : 'th'; } catch (e) {}
+      document.getElementById('loading').textContent = msg('loading');
       function target() {
         var params = new URLSearchParams(location.search);
         var page = params.get('page');
@@ -30,12 +41,12 @@
         return page + '.html' + extra;
       }
       // liff.init でログインを確立してから遷移（未ログインなら login()）
-      if (typeof liff === 'undefined') { document.body.innerHTML = 'LIFF SDK未ロード'; return; }
+      if (typeof liff === 'undefined') { document.body.textContent = msg('noSdk'); return; }
       liff.init({ liffId: (window.LIFF_CFG || {}).liffId }).then(function () {
         if (!liff.isLoggedIn()) { liff.login(); return; }
         location.replace(target());
       }).catch(function (e) {
-        document.body.innerHTML = '初期化エラー: ' + (e && e.message);
+        document.body.textContent = msg('initErr') + (e && e.message);
       });
     })();
   </script>

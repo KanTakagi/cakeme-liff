@@ -121,6 +121,9 @@
       }).catch(function (e) { showErr(e.message); });
     });
 
+    // 言語を選んだ瞬間に画面表示も切り替える（保存前のプレビュー）
+    document.getElementById('lang').addEventListener('change', function () { setLang(this.value); });
+
     function fill(d) {
       var c = d.company;
       // 拠点セレクト

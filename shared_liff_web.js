@@ -24,9 +24,9 @@
 
     init: function (onReady) {
       if (typeof liff === 'undefined') {
-        document.body.innerHTML = '<div class="wrap"><p class="err">LIFF SDK未ロード</p></div>'; return;
+        document.body.innerHTML = '<div class="wrap"><p class="err">' + t('LIFF SDK未ロード') + '</p></div>'; return;
       }
-      if (!LIFF_ID) { document.body.innerHTML = '<div class="wrap"><p class="err">LIFF未設定</p></div>'; return; }
+      if (!LIFF_ID) { document.body.innerHTML = '<div class="wrap"><p class="err">' + t('LIFF未設定') + '</p></div>'; return; }
       liff.init({ liffId: LIFF_ID }).then(function () {
         if (!liff.isLoggedIn()) { liff.login(); return Promise.reject(new Error('redirecting')); }
         CAKEME.token = liff.getAccessToken();
@@ -36,7 +36,7 @@
         if (onReady) onReady();
       }).catch(function (e) {
         if (String(e && e.message).indexOf('redirect') >= 0) return; // ログインへ遷移中
-        document.body.innerHTML = '<div class="wrap"><p class="err">初期化エラー: ' + (e && e.message) + '</p></div>';
+        document.body.innerHTML = '<div class="wrap"><p class="err">' + t('初期化エラー: ') + esc(e && e.message) + '</p></div>';
       });
     },
 
@@ -94,6 +94,11 @@
     'エラー: ': { th: 'ข้อผิดพลาด: ', en: 'Error: ' },
     'まだありません': { th: 'ยังไม่มีข้อมูลค่ะ', en: 'Nothing yet' },
     '読み込みエラー: ': { th: 'โหลดข้อมูลผิดพลาด: ', en: 'Load error: ' },
+    '（未設定）': { th: '(ยังไม่ได้ตั้งค่า)', en: '(Not set)' },
+    'LIFF SDK未ロード': { th: 'โหลด LIFF SDK ไม่สำเร็จค่ะ', en: 'Failed to load the LIFF SDK' },
+    'LIFF未設定': { th: 'ยังไม่ได้ตั้งค่า LIFF ค่ะ', en: 'LIFF is not configured' },
+    '初期化エラー: ': { th: 'เกิดข้อผิดพลาดตอนเริ่มต้น: ', en: 'Initialization error: ' },
+    '{price} THB〜': { th: 'เริ่มต้น {price} THB', en: 'from {price} THB' },
 
     // ---- 設定 ----
     '設定': { th: 'ตั้งค่า', en: 'Settings' },
@@ -296,14 +301,20 @@
   }
   window.applyI18n = applyI18n;
 
+  function syncLangAttr() {
+    try { document.documentElement.lang = window.LANG; } catch (e) {}
+  }
+
   window.setLang = function (lang) {
     window.LANG = (String(lang).toLowerCase() === 'en') ? 'en' : 'th';
     try { localStorage.setItem('cakeme_lang', window.LANG); } catch (e) {}
+    syncLangAttr();
     applyI18n(document.body);
   };
 
   // 初回適用＋動的挿入ノードの自動翻訳（JSでinnerHTML生成した静的日本語も拾う）
   document.addEventListener('DOMContentLoaded', function () {
+    syncLangAttr();
     applyI18n(document.body);
     try {
       new MutationObserver(function (muts) {

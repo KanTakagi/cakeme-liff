@@ -113,7 +113,7 @@
             '<div class="cprice">' + prices + '</div></div></div>';
         }).join('') || '<p class="muted">メニュー準備中です</p>';
       }).catch(function (e) {
-        document.getElementById('grid').innerHTML = '<p class="err">読み込みエラー: ' + esc(e.message) + '</p>';
+        document.getElementById('grid').innerHTML = '<p class="err">' + t('読み込みエラー: ') + esc(e.message) + '</p>';
       });
     });
   </script>
